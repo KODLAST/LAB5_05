@@ -135,7 +135,7 @@ int main(void) {
 
 		case 2:
 			if (State == 2) {
-				HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
+
 				static uint32_t timestamp = 0;
 				if (HAL_GetTick() > timestamp) {
 					timestamp = HAL_GetTick() + HzMs;
@@ -144,22 +144,12 @@ int main(void) {
 				if (RxBuffer[0] == 97) {
 					Hz = Hz + 1;
 					HzMs = (500 / Hz);
-					sprintf((char*) TxBuffer, "Now Hz : %s \r\n", Hz);
-					HAL_UART_Transmit_IT(&huart2, TxBuffer,
-							strlen((char*) TxBuffer));
-					HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
-					RxBuffer[1] = '\0';
 					RxBuffer[0] = 0;
 
 				} else if (RxBuffer[0] == 115) {
 					if (Hz > 1) {
 						Hz = Hz - 1;
 						HzMs = (500 / Hz);
-						sprintf((char*) TxBuffer, "Now Hz : %s \r\n", Hz);
-						HAL_UART_Transmit_IT(&huart2, TxBuffer,
-								strlen((char*) TxBuffer));
-						HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
-						RxBuffer[1] = '\0';
 						RxBuffer[0] = 0;
 
 					}
@@ -318,11 +308,18 @@ void UARTInteruptConfig() {
 	HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart == &huart2) {
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart == &huart2)
+	{
+		RxBuffer[1] = '\0';
+		sprintf((char*)TxBuffer,"Received : %s\r\n",RxBuffer);
+		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 
+		HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
 	}
 }
+
 /* USER CODE END 4 */
 
 /**
